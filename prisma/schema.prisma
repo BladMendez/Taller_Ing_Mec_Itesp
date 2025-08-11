@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+// 1 Genera el cliente JS para que podamos usar  Prisma en el código
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+// 2 Fuente  de datos: SQLite; toma la URL desde .env
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 3 Enum de estado de herramientas (solo dos valores por ahora)
+enum ToolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+
+// 4 Tabla de ubicaciones físicas (estantería/locker)
+model Location{
+  id        Int     @id @default(autoincrement()) // PK auto
+  name      String                                // nombre  visible
+  note      String?                               // nota opcional 
+  createdAt DateTime  @default(now())             // audit
+  updatedAt DateTime  @updatedAt                  
+
+  tools     Tool[]                                // relación 1:N con tool 
+}
+
+
+// 5 Tabla de herramientas
+model Tool{
+  id          Int    @id @default(autoincrement())  // PK auto 
+  code        String     @unique                    // clave interna única
+  name        String                                // nombre visible
+  category    String?                               // Opcional 
+  quantity    Int        @default(1)                // Stock Displonible
+  status      ToolStatus @default(ACTIVE)           // enum por defecto
+  locationId  Int?                                  // FK opcional
+  location    Location? @relation(fields: [locationId], references: [id])
+  createdAt   DateTime  @default(now())             // audit 
+  updatedAt   DateTime @updatedAt  
+}
